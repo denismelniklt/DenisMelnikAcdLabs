@@ -1,37 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
-using WebApplication.Models;
+using System.Collections.Generic;
+using ViewModels;
+
+using IDataLineManagerBll = BLL.IDataLineManager;
 
 namespace WebApplication.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IDataLineManagerBll DataLineManagerBll;
+
+        public HomeController(IDataLineManagerBll dataLineManagerBll)
+        {
+            DataLineManagerBll = dataLineManagerBll;
+        }
+
         public IActionResult Index()
         {
-            return View();
-        }
+            var sortedDataLines = DataLineManagerBll.GetSortedDataLines(ApplicationEnvironment.InputFilePath);
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
+            var dataLineViewModels = new List<DataLineViewModel>();
 
-            return View();
-        }
+            if (sortedDataLines == null)
+            {
+            }
+            else
+            {
+                foreach (var dataLine in sortedDataLines)
+                {
+                    var dataLineViewModel = new DataLineViewModel();
 
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
+                    dataLineViewModel = Mapper.Map<DataLineViewModel>(dataLine);
 
-            return View();
-        }
+                    dataLineViewModels.Add(dataLineViewModel);
+                }
 
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            }
+
+            return View(dataLineViewModels);
         }
     }
 }
